@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## EduAgent
+- App data is stored per-device in localStorage via `src/lib/edu-store.ts` (migrated from Payload CMS); move to Lovable Cloud when accounts/sync are needed.
+- AI coach runs through the `askCoach` server function (`src/lib/ai.functions.ts`) using the Lovable AI Gateway SDK; never call AI from the browser.
+- All workspace sections render from `/app/$section`; add a new section to `nav` in Workspace.tsx plus a branch in its main render.

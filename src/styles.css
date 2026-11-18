@@ -9,7 +9,7 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 /*
  * Design system definition.
@@ -153,3 +153,14 @@
     color: var(--color-foreground);
   }
 }
+
+@layer components {
+  .card { @apply rounded-2xl border border-[#dfe4dc] bg-white shadow-[0_1px_2px_rgba(20,35,27,.04)] dark:border-white/8 dark:bg-[#18211c]; }
+  .card-label { @apply text-[10px] font-bold uppercase tracking-[.17em] text-[#849087]; }
+  .primary-button { @apply rounded-xl bg-[#1c2922] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#314038] disabled:cursor-not-allowed disabled:opacity-50; }
+  .secondary-button { @apply rounded-xl border border-[#d9ded7] bg-white px-4 py-2.5 text-sm font-bold text-[#3e4c44] transition hover:bg-[#f3f5f1] dark:border-white/10 dark:bg-white/5 dark:text-white; }
+  .form-label { @apply block text-xs font-bold text-[#536159] dark:text-[#cad2cd]; }
+  .form-input { @apply mt-2 w-full rounded-xl border border-[#d9ded7] bg-[#f8f9f6] px-3.5 py-3 text-sm font-normal text-[#26332c] outline-none transition placeholder:text-[#a0a9a3] focus:border-[#718479] focus:ring-4 focus:ring-[#718479]/10 dark:border-white/10 dark:bg-white/5 dark:text-white; }
+}
+button, summary, select { cursor: pointer; }
+body { font-family: 'Inter', 'Avenir Next', 'Segoe UI', sans-serif; }

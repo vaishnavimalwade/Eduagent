@@ -1,0 +1,1 @@
+{"capabilities":[{"capability":"code/ui","outcome":"migrate","status":"verified"},{"capability":"database+auth","outcome":"local-device storage","status":"pending","next_action":"Move to Lovable Cloud with accounts if requested"},{"capability":"AI coach","outcome":"Lovable AI","status":"implemented"}]}
