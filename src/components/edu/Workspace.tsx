@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  applyMutation, loadData, saveData, resetData,
+  applyMutation, loadData, saveData, initStore, clearStore,
   type AppData, type Course, type Task, type Project, type Session, type Chat, type Mutation,
 } from "@/lib/edu-store";
 import { askCoach } from "@/lib/ai.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { ScheduleView, RemindersView, FocusMode, useReminderAlerts } from "./NewViews";
 
 export const nav = [
@@ -46,7 +47,11 @@ export default function Workspace({ initialSection }: { initialSection: string }
 
   const load = useCallback(async () => {
     try {
-      const next = loadData()
+      const { data: auth } = await supabase.auth.getUser()
+      const u = auth.user
+      if (!u) return
+      const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', u.id).maybeSingle()
+      const next = await initStore({ id: u.id, email: u.email ?? '', name: profile?.display_name ?? (u.user_metadata?.full_name as string | undefined) ?? u.email?.split('@')[0] ?? 'Student' })
       setData(next)
       const theme = next.preferences?.[0]?.theme
       setDark(theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches))
@@ -75,8 +80,9 @@ export default function Workspace({ initialSection }: { initialSection: string }
   }
 
   const signOut = async () => {
-    resetData()
-    window.location.assign('/')
+    clearStore()
+    await supabase.auth.signOut()
+    navigate({ to: '/auth', replace: true })
   }
 
   const openTask = (due = '') => {
@@ -246,7 +252,7 @@ export default function Workspace({ initialSection }: { initialSection: string }
                 onClick={() => void signOut()}
                 className="rounded-lg px-2 py-2 text-xs font-semibold text-[#78827c] hover:text-red-600"
               >
-                Reset data
+                Sign out
               </button>
             </div>
           </header>

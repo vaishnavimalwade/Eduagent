@@ -1,7 +1,7 @@
 import { createFileRoute, ClientOnly } from "@tanstack/react-router";
 import Workspace, { nav, sections } from "@/components/edu/Workspace";
 
-export const Route = createFileRoute("/app/$section")({
+export const Route = createFileRoute("/_authenticated/app/$section")({
   head: ({ params }) => {
     const label = nav.find((n) => n[0] === params.section)?.[1] ?? "Workspace";
     return {

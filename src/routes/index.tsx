@@ -27,9 +27,14 @@ function Index() {
           <p className="text-xs font-bold uppercase tracking-[.2em] text-[#c8f169]">Your academic assistant</p>
           <h1 className="mt-4 max-w-3xl text-5xl font-semibold tracking-[-.04em] sm:text-6xl">Plan the semester. Own the day. Stay in focus.</h1>
           <p className="mt-6 max-w-xl text-lg text-white/60">Tasks, routines, reminders, deep-focus sessions and project milestones — with an AI coach that turns big work into small steps.</p>
-          <Link to="/app/$section" params={{ section: "dashboard" }} className="mt-10 inline-block rounded-xl bg-[#c8f169] px-6 py-3.5 font-bold text-[#17241e] hover:opacity-90">
-            Open my workspace →
-          </Link>
+          <div className="mt-10 flex flex-wrap gap-3">
+            <Link to="/auth" className="inline-block rounded-xl bg-[#c8f169] px-6 py-3.5 font-bold text-[#17241e] hover:opacity-90">
+              Sign up free →
+            </Link>
+            <Link to="/auth" className="inline-block rounded-xl border border-white/20 px-6 py-3.5 font-bold hover:bg-white/5">
+              Log in
+            </Link>
+          </div>
         </section>
         <div className="grid gap-3 sm:grid-cols-3">
           {features.map((f) => (

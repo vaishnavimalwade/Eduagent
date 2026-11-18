@@ -23,7 +23,6 @@ export type AppData = {
 export type Collection = Exclude<keyof AppData, "user" | "aiConfigured">;
 export type Mutation = { action: "create" | "update" | "delete"; collection: Collection; id?: string; data?: Record<string, unknown> };
 
-const KEY = "eduagent-data-v1";
 export const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
 function seed(): AppData {
@@ -65,26 +64,62 @@ function seed(): AppData {
   };
 }
 
-export function loadData(): AppData {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<AppData>;
-      const base = seed();
-      return { ...base, ...parsed, schedules: parsed.schedules ?? base.schedules, reminders: parsed.reminders ?? base.reminders, aiConfigured: true } as AppData;
-    }
-  } catch {}
-  const d = seed();
-  saveData(d);
+const LEGACY_KEY = "eduagent-data-v1";
+let current: AppData | null = null;
+let currentUser: string | null = null;
+let saveTimer: ReturnType<typeof setTimeout> | undefined;
+
+function normalize(parsed: Partial<AppData>): AppData {
+  const base = seed();
+  return { ...base, ...parsed, schedules: parsed.schedules ?? base.schedules, reminders: parsed.reminders ?? base.reminders, aiConfigured: true } as AppData;
+}
+
+/** Loads the signed-in user's workspace from Lovable Cloud (creating it on first visit). */
+export async function initStore(user: { id: string; email: string; name: string }): Promise<AppData> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  const { data: row, error } = await supabase.from("workspaces").select("data").eq("user_id", user.id).maybeSingle();
+  if (error) throw error;
+  let d: AppData;
+  if (row && row.data && Object.keys(row.data as object).length) {
+    d = normalize(row.data as Partial<AppData>);
+  } else {
+    let legacy: Partial<AppData> | null = null;
+    try {
+      const raw = localStorage.getItem(LEGACY_KEY);
+      if (raw) legacy = JSON.parse(raw);
+    } catch {}
+    d = legacy ? normalize(legacy) : seed();
+    d["chat-messages"] = d["chat-messages"] ?? [];
+  }
+  d.user = { ...d.user, id: user.id, email: user.email, name: user.name || d.user.name, isDemo: false };
+  current = d;
+  currentUser = user.id;
+  if (!row) {
+    await supabase.from("workspaces").insert({ user_id: user.id, data: JSON.parse(JSON.stringify(d)) });
+    localStorage.removeItem(LEGACY_KEY);
+  }
   return d;
 }
 
-export function saveData(d: AppData) {
-  localStorage.setItem(KEY, JSON.stringify(d));
+export function loadData(): AppData {
+  if (!current) throw new Error("Workspace not loaded");
+  return current;
 }
 
-export function resetData() {
-  localStorage.removeItem(KEY);
+export function saveData(d: AppData) {
+  current = d;
+  const userId = currentUser;
+  if (!userId) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    await supabase.from("workspaces").update({ data: JSON.parse(JSON.stringify(current)), updated_at: new Date().toISOString() }).eq("user_id", userId);
+  }, 600);
+}
+
+export function clearStore() {
+  current = null;
+  currentUser = null;
 }
 
 export function applyMutation(d: AppData, m: Mutation): AppData {
