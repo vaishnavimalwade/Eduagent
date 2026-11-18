@@ -51,7 +51,7 @@ export default function Workspace({ initialSection }: { initialSection: string }
       const u = auth.user
       if (!u) return
       const { data: profile } = await supabase.from('profiles').select('display_name').eq('id', u.id).maybeSingle()
-      const next = await initStore({ id: u.id, email: u.email ?? '', name: profile?.display_name ?? (u.user_metadata?.full_name as string | undefined) ?? u.email?.split('@')[0] ?? 'Student' })
+      const next = await initStore({ id: u.id, email: u.email ?? '', name: profile?.display_name ?? (u.user_metadata?.['full_name'] as string | undefined) ?? u.email?.split('@')[0] ?? 'Student' })
       setData(next)
       const theme = next.preferences?.[0]?.theme
       setDark(theme === 'dark' || (theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches))

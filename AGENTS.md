@@ -30,6 +30,6 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## EduAgent
-- App data is stored per-device in localStorage via `src/lib/edu-store.ts` (migrated from Payload CMS); move to Lovable Cloud when accounts/sync are needed.
+- Each signed-in user's workspace is one JSON row in `workspaces` (Lovable Cloud), loaded and debounce-saved via `src/lib/edu-store.ts`; simple sync without per-collection tables.
 - AI coach runs through the `askCoach` server function (`src/lib/ai.functions.ts`) using the Lovable AI Gateway SDK; never call AI from the browser.
 - All workspace sections render from `/app/$section`; add a new section to `nav` in Workspace.tsx plus a branch in its main render.
