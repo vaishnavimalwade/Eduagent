@@ -20,6 +20,30 @@ export const askCoach = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }) => {
     const userText = data.context ? `Context:\n${data.context}\n\nQuestion:\n${data.message}` : data.message;
+    const ownKey = process.env.OPENAI_API_KEY;
+    if (!process.env.LOVABLE_API_KEY && ownKey) {
+      // Local fallback (exported ZIP): call OpenAI directly with your own key.
+      try {
+        const r = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${ownKey}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+            messages: [{ role: "system", content: SYSTEM }, ...data.history, { role: "user", content: userText }],
+          }),
+        });
+        if (r.status === 429) return { error: "The coach is busy right now. Try again in a minute." };
+        if (!r.ok) return { error: `OpenAI error (${r.status}). Check your OPENAI_API_KEY.` };
+        const j = (await r.json()) as { choices?: { message?: { content?: string } }[] };
+        return { answer: j.choices?.[0]?.message?.content || "I couldn't generate a response." };
+      } catch (error) {
+        console.error(error);
+        return { error: "Could not reach OpenAI." };
+      }
+    }
+    if (!process.env.LOVABLE_API_KEY) {
+      return { error: "AI coach not configured. Add OPENAI_API_KEY to your .env file to use it locally." };
+    }
     try {
       const res = await generateResponse({
         model: "openai/gpt-6-astra",

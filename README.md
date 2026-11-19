@@ -22,3 +22,10 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Running locally (AI coach)
+Outside Lovable, add your own key to `.env`:
+```
+OPENAI_API_KEY=sk-...
+# optional: OPENAI_MODEL=gpt-4o-mini
+```
