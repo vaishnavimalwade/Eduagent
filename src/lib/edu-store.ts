@@ -12,13 +12,17 @@ export type Notice = { id: string; title: string; message: string; read?: boolea
 export type Chat = { id: string; role: "user" | "assistant"; content: string };
 export type Schedule = { id: string; title: string; time: string; durationMinutes: number; days: number[]; category: string; doneOn?: string[] };
 export type Reminder = { id: string; title: string; note?: string; remindAt: string; done?: boolean; notified?: boolean };
+export type Flashcard = { id: string; front: string; back: string; mastered?: boolean };
+export type Deck = { id: string; title: string; course: string; topic: string; cards: Flashcard[]; createdAt: string };
+export type QuizQuestion = { id: string; question: string; options: string[]; correctIndex: number; explanation: string };
+export type Quiz = { id: string; title: string; course: string; topic: string; questions: QuizQuestion[]; attempts: { score: number; total: number; date: string }[]; createdAt: string };
 export type Preference = { id: string; theme?: string; focusMinutes?: number; shortBreakMinutes?: number; longBreakMinutes?: number };
 
 export type AppData = {
   user: { id: string; name: string; email: string; isDemo?: boolean; weeklyGoalHours?: number; streak?: number };
   courses: Course[]; tasks: Task[]; projects: Project[]; "study-sessions": Session[];
   notifications: Notice[]; preferences: Preference[]; "chat-messages": Chat[];
-  schedules: Schedule[]; reminders: Reminder[]; aiConfigured: boolean;
+  schedules: Schedule[]; reminders: Reminder[]; decks: Deck[]; quizzes: Quiz[]; aiConfigured: boolean;
 };
 export type Collection = Exclude<keyof AppData, "user" | "aiConfigured">;
 export type Mutation = { action: "create" | "update" | "delete"; collection: Collection; id?: string; data?: Record<string, unknown> };
@@ -60,6 +64,17 @@ function seed(): AppData {
       { id: uid(), title: "Plan tomorrow", time: "21:00", durationMinutes: 15, days: [0, 1, 2, 3, 4, 5, 6], category: "Personal" },
     ],
     reminders: [{ id: uid(), title: "Submit graph traversal", note: "Upload to the course portal", remindAt: h(16) }],
+    decks: [{ id: uid(), title: "Graph basics", course: "c1", topic: "Graphs", createdAt: h(0), cards: [
+      { id: uid(), front: "What does BFS use to track the frontier?", back: "A queue (FIFO)." },
+      { id: uid(), front: "What does DFS use to track the frontier?", back: "A stack (or recursion)." },
+      { id: uid(), front: "Time complexity of BFS on an adjacency list?", back: "O(V + E)." },
+      { id: uid(), front: "Which traversal finds shortest paths in unweighted graphs?", back: "BFS." },
+    ] }],
+    quizzes: [{ id: uid(), title: "Eigenvalues check", course: "c2", topic: "Eigenvalues", createdAt: h(0), attempts: [], questions: [
+      { id: uid(), question: "An eigenvector v of A satisfies…", options: ["Av = λv", "Av = 0", "A + v = λ", "vA = A"], correctIndex: 0, explanation: "By definition, A scales v by λ." },
+      { id: uid(), question: "Eigenvalues are roots of…", options: ["trace(A)", "det(A − λI) = 0", "A² = I", "rank(A)"], correctIndex: 1, explanation: "The characteristic polynomial det(A − λI)." },
+      { id: uid(), question: "Sum of eigenvalues equals…", options: ["Determinant", "Rank", "Trace", "Zero"], correctIndex: 2, explanation: "The trace equals the sum of eigenvalues." },
+    ] }],
     aiConfigured: true,
   };
 }
@@ -71,7 +86,7 @@ let saveTimer: ReturnType<typeof setTimeout> | undefined;
 
 function normalize(parsed: Partial<AppData>): AppData {
   const base = seed();
-  return { ...base, ...parsed, schedules: parsed.schedules ?? base.schedules, reminders: parsed.reminders ?? base.reminders, aiConfigured: true } as AppData;
+  return { ...base, ...parsed, schedules: parsed.schedules ?? base.schedules, reminders: parsed.reminders ?? base.reminders, decks: parsed.decks ?? base.decks, quizzes: parsed.quizzes ?? base.quizzes, aiConfigured: true } as AppData;
 }
 
 /** Loads the signed-in user's workspace from Lovable Cloud (creating it on first visit). */

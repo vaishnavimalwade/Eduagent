@@ -6,6 +6,7 @@ import {
 } from "@/lib/edu-store";
 import { askCoach } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
+import { StudyView } from "./StudyView";
 import { ScheduleView, RemindersView, FocusMode, useReminderAlerts } from "./NewViews";
 
 export const nav = [
@@ -16,6 +17,7 @@ export const nav = [
   ["calendar", "Calendar", "C"],
   ["reminders", "Reminders", "!"],
   ["focus", "Focus Mode", "F"],
+  ["study", "Flashcards & Quizzes", "Q"],
   ["projects", "Project Tracker (PBL)", "R"],
   ["coach", "AI Study Coach", "AI"],
   ["analytics", "Academic Analytics", "A"],
@@ -273,6 +275,7 @@ export default function Workspace({ initialSection }: { initialSection: string }
             {initialSection === 'planner' && <Planner data={data} mutate={mutate} />}
             {initialSection === 'schedule' && <ScheduleView data={data} mutate={mutate} />}
             {initialSection === 'reminders' && <RemindersView data={data} mutate={mutate} />}
+            {initialSection === 'study' && <StudyView data={data} mutate={mutate} />}
             {initialSection === 'focus' && <FocusMode data={data} mutate={mutate} />}
             {initialSection === 'calendar' && (
               <CalendarView data={data} onAdd={(due) => openTask(due)} mutate={mutate} />
